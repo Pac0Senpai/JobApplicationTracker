@@ -62,8 +62,21 @@ public class Main {
                     break;
 
                 case 3:
-                    System.out.println("Update status selected.");
-                    break;
+                    System.out.print("Enter application ID: ");
+                    int id = scanner.nextInt();
+                    scanner.nextLine();
+
+                    JobApplication selectApplication = null;
+
+                    for (JobApplication application : applications){
+                        if (selectApplication == null){
+                            System.out.println("Application not found.");
+                        }
+                        if (application.getId() == id) {
+                            selectApplication = application;
+                            break;
+                        }
+                    }
 
                 case 4:
                     System.out.println("Search by company selected.");

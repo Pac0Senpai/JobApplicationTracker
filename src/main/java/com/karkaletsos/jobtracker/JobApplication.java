@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public class JobApplication {
 
-    private int id;
+    private final int id;
     private String company;
     private String position;
     private LocalDate applicationDate;
@@ -59,6 +59,10 @@ public class JobApplication {
 
     public void setCompany(String company) {
         this.company = company;
+    }
+
+    public int getId() {
+        return id;
     }
 
     @Override
