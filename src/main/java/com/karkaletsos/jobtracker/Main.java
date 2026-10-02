@@ -94,7 +94,19 @@ public class Main {
                     break;
 
                 case 4:
-                    System.out.println("Search by company selected.");
+                    System.out.println("Enter Company name:");
+                    String searchCompany = scanner.nextLine();
+
+                    boolean found = false;
+
+                    for  (JobApplication application : applications){
+                        if (application.getCompany().equalsIgnoreCase(searchCompany)){
+                            System.out.println(application);
+                        }
+                    }
+                    if (!found){
+                        System.out.println("No applications found for this Company.");
+                    }
                     break;
 
                 case 0:
