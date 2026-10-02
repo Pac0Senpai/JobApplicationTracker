@@ -69,14 +69,29 @@ public class Main {
                     JobApplication selectApplication = null;
 
                     for (JobApplication application : applications){
-                        if (selectApplication == null){
-                            System.out.println("Application not found.");
-                        }
                         if (application.getId() == id) {
                             selectApplication = application;
                             break;
                         }
                     }
+                    if (selectApplication == null){
+                        System.out.println("Application not found.");
+                        break;
+                    }
+
+                    System.out.println("Current status: " + selectApplication.getStatus());
+                    System.out.println("Do you want to update the status? (y/n): ");
+                    String answer = scanner.nextLine();
+                    if (!answer.equalsIgnoreCase("y")) {
+                        break;
+                    }
+                    System.out.print("Enter new status: ");
+                    String newStatus = scanner.nextLine();
+
+                    selectApplication.setStatus(newStatus);
+
+                    System.out.println("Status updated successfully.");
+                    break;
 
                 case 4:
                     System.out.println("Search by company selected.");
