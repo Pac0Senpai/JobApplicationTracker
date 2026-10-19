@@ -1,8 +1,6 @@
 package com.karkaletsos.jobtracker;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -22,8 +20,6 @@ public class Main {
         }
 
         Scanner scanner = new Scanner(System.in);
-        List<JobApplication> applications = new ArrayList<>();
-
         int choice;
 
         do {
@@ -48,17 +44,6 @@ public class Main {
 
                     System.out.print("Notes: ");
                     String notes = scanner.nextLine();
-
-                    JobApplication newApplication = new JobApplication(
-                            applications.size() + 1,
-                            company,
-                            position,
-                            LocalDate.now(),
-                            "Applied",
-                            notes
-                    );
-
-                    applications.add(newApplication);
 
                         String sql = """
                                  INSERT INTO job_applications
@@ -134,6 +119,16 @@ public class Main {
 
                         statement.setInt(1, id);
 
+                        ResultSet resultSet = statement.executeQuery();
+
+                        if (!resultSet.next()) {
+                            System.out.println("Application not found.");
+                            break;
+                        }
+
+                        String currentStatus = resultSet.getString("status");
+                        System.out.println("Current status: " + currentStatus);
+
                     }
                     catch (SQLException e) {
                         System.out.println("Failed to find application.");
@@ -141,20 +136,7 @@ public class Main {
                     }
 
 
-                    JobApplication selectApplication = null;
 
-                    for (JobApplication application : applications){
-                        if (application.getId() == id) {
-                            selectApplication = application;
-                            break;
-                        }
-                    }
-                    if (selectApplication == null){
-                        System.out.println("Application not found.");
-                        break;
-                    }
-
-                    System.out.println("Current status: " + selectApplication.getStatus());
                     System.out.println("Do you want to update the status? (y/n): ");
                     String answer = scanner.nextLine();
                     if (!answer.equalsIgnoreCase("y")) {
@@ -163,25 +145,68 @@ public class Main {
                     System.out.print("Enter new status: ");
                     String newStatus = scanner.nextLine();
 
-                    selectApplication.setStatus(newStatus);
+                    String updateSql = """
+                        UPDATE job_applications
+                        SET status = ?
+                        WHERE id = ?
+                    """;
 
-                    System.out.println("Status updated successfully.");
+                    try (Connection connection = DatabaseConnection.getConnection();
+                         PreparedStatement updateStatement = connection.prepareStatement(updateSql)) {
+
+                        updateStatement.setString(1, newStatus);
+                        updateStatement.setInt(2, id);
+
+                        int rowsUpdated = updateStatement.executeUpdate();
+
+                        if (rowsUpdated > 0) {
+                            System.out.println("Status updated successfully.");
+                        }
+                    }
+                    catch (SQLException e) {
+                        System.out.println("Failed to update status.");
+                        e.printStackTrace();
+                    }
                     break;
 
                 case 4:
                     System.out.println("Enter Company name:");
                     String searchCompany = scanner.nextLine();
 
-                    boolean found = false;
+                    String searchSql = """
+                    SELECT * FROM job_applications
+                    WHERE company = ?
+                    """;
 
-                    for  (JobApplication application : applications){
-                        if (application.getCompany().equalsIgnoreCase(searchCompany)){
-                            System.out.println(application);
+                    try (Connection connection = DatabaseConnection.getConnection();
+                         PreparedStatement statement = connection.prepareStatement(searchSql)) {
+
+                        statement.setString(1, searchCompany);
+
+                        ResultSet resultSet = statement.executeQuery();
+
+                        boolean found = false;
+
+                        while (resultSet.next()) {
+                            if (!found) {
+                                System.out.println("No applications found for this company.");
+                            }
                             found = true;
+
+                            System.out.println(
+                                    resultSet.getInt("id") + " | " +
+                                            resultSet.getString("company") + " | " +
+                                            resultSet.getString("position") + " | " +
+                                            resultSet.getDate("application_date") + " | " +
+                                            resultSet.getString("status") + " | " +
+                                            resultSet.getString("notes")
+                            );
                         }
+
                     }
-                    if (!found){
-                        System.out.println("No applications found for this Company.");
+                    catch (SQLException e) {
+                        System.out.println("Failed to search applications.");
+                        e.printStackTrace();
                     }
                     break;
 
